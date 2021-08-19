@@ -11,20 +11,72 @@ export default function Table(props) {
     let totalPage = 0
     let sizePerPage = 0
     const [cities, setCities] = useState([])
-    const [paginationOption, setPaginationOption] = useState({})
+    const [paginationOption, setPaginationOption] = useState({ skip: 0, limit: 30000, sortField: "city", sortValue: 'asc', searchText: '' })
+    const [options, setOptions] = useState(
+        {
+            pageStartIndex: 0,
+            // sizePerPage: 10,
+            // paginationSize: 4,
+            // alwaysShowAllBtns: true, // Always show next and previous button
+            // withFirstAndLast: false, // Hide the going to First and Last page button
+            // hideSizePerPage: true, // Hide the sizePerPage dropdown always
+            // hidePageListOnlyOnePage: true, // Hide the pagination list when only one page
+            firstPageText: 'First',
+            prePageText: 'Back',
+            nextPageText: 'Next',
+            lastPageText: 'Last',
+            nextPageTitle: 'First page',
+            prePageTitle: 'Pre page',
+            firstPageTitle: 'Next page',
+            lastPageTitle: 'Last page',
+            showTotal: true,
+            // totalSize: 100,
+            // paginationTotalRenderer: paginationOption.total,
+            disablePageTitle: true,
+            // sizePerPageList: [{
+            //   text: '5', value: 5
+            // }, {
+            //   text: '10', value: 10
+            // }, {
+            //   text: 'All', value: products.length
+            // }] ,
+            onSizePerPageChange: (sizePerPage, page) => {
+                console.log('Size per page change!!!');
+                console.log('Newest size per page:' + sizePerPage);
+                console.log('Newest page:' + page);
+            },
+            onPageChange: (page, sizePerPage) => {
+                console.log('Page change!!!');
+                console.log('Newest size per page:' + sizePerPage);
+                console.log('Newest page:' + page);
+                console.log("paginationOption", paginationOption)
+                let skip = sizePerPage * (page - 1)
+                let limit = 2 * sizePerPage
+                fetchCities({ skip, limit })
+                // setPaginationOption({ ...paginationOption, skip, limit })
+            }
+
+        }
+    )
+
+
+
     const [searchText, setSearchText] = useState('')
     const fetchCities = async (paramsOptions) => {
-        let defaultParams = { skip: 0, limit: 30, sortField: "city", sortValue: 'asc', searchText: '' }
+        // let defaultParams = { skip: 0, limit: 30, sortField: "city", sortValue: 'asc', searchText: '' }
+        let defaultParams = paginationOption
         let params = Object.assign(defaultParams, paramsOptions)
         try {
             let res = await axios.get(BASE_URL + '/cities', { params })
-
-            setCities(res.data.cities.docs)
             const { limit, offset, page, pages, total } = res.data.cities
-            totalPage = total
-            sizePerPage = limit
+            setOptions({ ...options, totalSize: total, sizePerPage: limit, paginationSize: pages })
+            setCities(res.data.cities.docs)
+
+            // totalPage = total
+            // sizePerPage = limit
             // setPaginationOption({ limit, offset, page, pages, total })
             console.log("<<<<<<<<<<<paginationOption", totalPage)
+
         } catch (error) {
             console.log("error", error)
         }
@@ -73,53 +125,53 @@ export default function Table(props) {
     ]
 
     useEffect(async () => {
-        await fetchCities()
+        fetchCities()
     }, [])
 
-    const options = {
-        pageStartIndex: 1,
-        sizePerPage: paginationOption.limit,
-        // paginationSize: 4,
-        // alwaysShowAllBtns: true, // Always show next and previous button
-        // withFirstAndLast: false, // Hide the going to First and Last page button
-        // hideSizePerPage: true, // Hide the sizePerPage dropdown always
-        // hidePageListOnlyOnePage: true, // Hide the pagination list when only one page
-        firstPageText: 'First',
-        prePageText: 'Back',
-        nextPageText: 'Next',
-        lastPageText: 'Last',
-        nextPageTitle: 'First page',
-        prePageTitle: 'Pre page',
-        firstPageTitle: 'Next page',
-        lastPageTitle: 'Last page',
-        showTotal: true,
-        totalSize: totalPage,
-        // paginationTotalRenderer: paginationOption.total,
-        disablePageTitle: true,
-        // sizePerPageList: [{
-        //   text: '5', value: 5
-        // }, {
-        //   text: '10', value: 10
-        // }, {
-        //   text: 'All', value: products.length
-        // }] ,
-        onSizePerPageChange: (sizePerPage, page) => {
-            console.log('Size per page change!!!');
-            console.log('Newest size per page:' + sizePerPage);
-            console.log('Newest page:' + page);
-        },
-        onPageChange: (page, sizePerPage) => {
-            console.log('Page change!!!');
-            console.log('Newest size per page:' + sizePerPage);
-            console.log('Newest page:' + page);
-            console.log("paginationOption", paginationOption)
-            let skip = sizePerPage * (page - 1)
-            let limit = 2 * sizePerPage
-            fetchCities({ skip, limit })
-            // setPaginationOption({ ...paginationOption, skip, limit })
-        }
+    // const options = {
+    //     pageStartIndex: 1,
+    //     sizePerPage: paginationOption.limit,
+    //     // paginationSize: 4,
+    //     // alwaysShowAllBtns: true, // Always show next and previous button
+    //     // withFirstAndLast: false, // Hide the going to First and Last page button
+    //     // hideSizePerPage: true, // Hide the sizePerPage dropdown always
+    //     // hidePageListOnlyOnePage: true, // Hide the pagination list when only one page
+    //     firstPageText: 'First',
+    //     prePageText: 'Back',
+    //     nextPageText: 'Next',
+    //     lastPageText: 'Last',
+    //     nextPageTitle: 'First page',
+    //     prePageTitle: 'Pre page',
+    //     firstPageTitle: 'Next page',
+    //     lastPageTitle: 'Last page',
+    //     showTotal: true,
+    //     totalSize: totalPage,
+    //     // paginationTotalRenderer: paginationOption.total,
+    //     disablePageTitle: true,
+    //     // sizePerPageList: [{
+    //     //   text: '5', value: 5
+    //     // }, {
+    //     //   text: '10', value: 10
+    //     // }, {
+    //     //   text: 'All', value: products.length
+    //     // }] ,
+    //     onSizePerPageChange: (sizePerPage, page) => {
+    //         console.log('Size per page change!!!');
+    //         console.log('Newest size per page:' + sizePerPage);
+    //         console.log('Newest page:' + page);
+    //     },
+    //     onPageChange: (page, sizePerPage) => {
+    //         console.log('Page change!!!');
+    //         console.log('Newest size per page:' + sizePerPage);
+    //         console.log('Newest page:' + page);
+    //         console.log("paginationOption", paginationOption)
+    //         let skip = sizePerPage * (page - 1)
+    //         let limit = 2 * sizePerPage
+    //         fetchCities({ skip, limit })
+    //         // setPaginationOption({ ...paginationOption, skip, limit })
+    //     }
 
-    };
+    // };
     console.log("NNNNNN", options)
 
 
@@ -191,7 +243,7 @@ export default function Table(props) {
                                 bootstrap4={true}
                                 striped={true}
                                 noDataIndication="Table is Empty"
-                                pagination={paginationFactory(options)}
+                                pagination={paginationFactory()}
                                 {...props.baseProps}
                             />
                         </div>
