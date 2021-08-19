@@ -1,77 +1,77 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import openSocket from 'socket.io-client'
 import { BASE_URL } from "../constants/api";
 // const Delivery = require('delivery')
 const fs = require('fs');
+const SocketIOFileUpload = require('socketio-file-upload/client');
 
 function UploadVideo() {
-    const socket = openSocket(BASE_URL + '/');
-    // client-side
-    // socket.on("connect", (socket) => {
+    // const socket = openSocket(BASE_URL + '/');
+    const socketRef = useRef();
+    const [dataUri, setDataUri] = useState('')
+
+    const fileToDataUri = (file) => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            resolve(event.target.result)
+        };
+        reader.readAsDataURL(file);
+    })
+
+    // socket.on("connect", () => {
     //     console.log("socket.id", socket.id); // x8WIv7-mJelg7on_ALbx
     // });
 
-    // socket.emit('chat', "hellow world");
-    // const fileUpload = (e) => {
-
-    //     console.log(e.target.files[0])
-    //     socket.emit('file', { name: `video_${Date.now()}`, Data: e.target.files[0] });
-    // }
-    // let FReader = new FileReader();
 
 
-    // FReader = new FileReader();
+    const fileUpload = (file) => {
+        console.log("<<<<<<<<<<<<<<<<<<,,", file)
+        console.log("socketRef.current", socketRef.current)
 
-    // socket.on('connect', function () {
-    //     var delivery = new Delivery(socket);
+        if (!file) {
+            setDataUri('');
+            return;
+        }
 
-    socket.on('connect', function () {
-        // var delivery = new Delivery(socket);
-        console.log("connectedLLLLLLL", socket.id)
-        // delivery.on('delivery.connect', function (delivery) {
+        fileToDataUri(file)
+            .then(dataUri => {
+                console.log("dataUri", dataUri)
+                setDataUri(dataUri)
+                socketRef.current.emit("file", dataUri)
+            })
 
-        // var file = e.target.files[0]
-        // var extraParams = { name: `video_${Date.now()}` };
-        // delivery.send(file, extraParams);
-        // e.preventDefault();
 
+        // var uploader = new SocketIOFileUpload(socket)
+        // console.log("KKKKKKKK", document.getElementById("siofu_input"))
+        // uploader.listenOnInput(document.getElementById("siofu_input"));
+        // console.log("uploader", uploader)
+
+        // // Do something on upload progress:
+        // uploader.addEventListener("progress", function (event) {
+        //     var percent = event.bytesLoaded / event.file.size * 100;
+        //     console.log("File is", percent.toFixed(2), "percent loaded");
         // });
-        // console.log(e.target.files[0])
-        // socket.emit('file', { name: `video_${Date.now()}`, Data: e.target.files[0] });
-        // delivery.on('send.success', function (fileUID) {
-        //     console.log("file was successfully sent.");
+
+        // // Do something when a file is uploaded:
+        // uploader.addEventListener("complete", function (event) {
+        //     console.log(event.success);
+        //     console.log(event.file);
         // });
-    });
 
-
-
-    const fileUpload = (e) => {
-        socket.on('connect', function () {
-            // var delivery = new Delivery(socket);
-            // delivery.on('delivery.connect', function (delivery) {
-
-            //     var file = e.target.files[0]
-            //     var extraParams = { name: `video_${Date.now()}` };
-            //     delivery.send(file, extraParams);
-            //     e.preventDefault();
-
-            // });
-            // // console.log(e.target.files[0])
-            // // socket.emit('file', { name: `video_${Date.now()}`, Data: e.target.files[0] });
-            // delivery.on('send.success', function (fileUID) {
-            //     console.log("file was successfully sent.");
-            // });
-        });
     }
 
-
+    useEffect(() => {
+        // Creates a WebSocket connection
+        socketRef.current = openSocket(BASE_URL + '/')
+    }, [])
 
 
 
     return (
         <div>
             <h1>UploadFile</h1>
-            <input type="file" class="form-control" onChange={fileUpload} />
+            {/* <img width="200" height="200" src={dataUri} alt="avatar" /> */}
+            <input type="file" class="form-control" onChange={(e) => fileUpload(e.target.files[0] || null)} />
         </div>
     )
 }
